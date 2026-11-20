@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>LightTable Studio | Image to PDF</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <style>
+        /* ======================================================
+           LIGHTTABLE STUDIO
+           Theme • Layout • Sidebar
+        ====================================================== */
+
+        :root{
+            --bg:#f8f8ff;
+            --surface:rgba(255,255,255,.72);
+            --card:rgba(255,255,255,.60);
+            --text:#222;
+            --primary:#9b87f5;
+            --secondary:#ffd6e8;
+            --accent:#a9d6ff;
+            --border:rgba(155,135,245,.25);
+            --shadow:0 25px 70px rgba(0,0,0,.08);
+        }
+
+        body.dark{
+            --bg:#0d0b11;
+            --surface:rgba(20,18,28,.82);
+            --card:rgba(25,22,35,.72);
+            --text:#ffffff;
+            --primary:#d7263d;
+            --secondary:#ff6b81;
+            --accent:#ff4d6d;
+            --border:rgba(215,38,61,.30);
+            --shadow:0 30px 90px rgba(0,0,0,.60);
+        }
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:"Poppins",sans-serif;
+        }
+
+        body{
+            background:var(--bg);
+            color:var(--text);
+            overflow-x:hidden;
+            transition:.35s;
+            min-height:100vh;
+        }
+
+        /* BACKGROUND BLOBS */
+
+        .background-blur{
+            position:fixed;
+            border-radius:50%;
+            filter:blur(140px);
+            z-index:-2;
+            opacity:.35;
+        }
+
+        .blur-1{
+            width:500px;
+            height:500px;
+            background:#d6c5ff;
+            left:-180px;
+            top:-150px;
+            animation:floatOne 12s ease-in-out infinite;
+        }
+
+        .blur-2{
+            width:420px;
+            height:420px;
+            background:#ffd7ea;
+            right:-140px;
+            bottom:-140px;
+            animation:floatTwo 15s ease-in-out infinite;
+        }
+
+        body.dark .blur-1{ background:#8d1022; }
+        body.dark .blur-2{ background:#550814; }
+
+        @keyframes floatOne{ 50%{ transform:translateY(45px); } }
+        @keyframes floatTwo{ 50%{ transform:translateX(-40px); } }
+
+        /* APP LAYOUT */
+
+        .app{
+            display:flex;
+            min-height:100vh;
+        }
+
+        /* SIDEBAR */
+
+        .sidebar{
+            width:250px;
+            padding:30px 25px;
+            background:var(--surface);
+            backdrop-filter:blur(20px);
+            border-right:1px solid var(--border);
+            display:flex;
+            flex-direction:column;
+            justify-content:space-between;
+            box-shadow:var(--shadow);
+        }
+
+        .logo{
+            display:flex;
+            align-items:center;
+            gap:12px;
+            margin-bottom:40px;
+        }
+
+        .logo i{ font-size:26px; color:var(--primary); }
+        .logo h2{ font-size:24px; font-weight:700; }
+
+        /* MENU */
+
+        .menu{
+            display:flex;
+            flex-direction:column;
+            gap:15px;
+        }
+
+        .menu a{
+            text-decoration:none;
+            color:var(--text);
+            padding:14px 18px;
+            border-radius:14px;
+            transition:.3s;
+            display:flex;
+            align-items:center;
+            gap:12px;
+            font-weight:500;
+        }
+
+        .menu a:hover{ background:var(--card); transform:translateX(5px); }
+
+        .menu .active{
+            background:linear-gradient(135deg, var(--primary), var(--accent));
+            color:white;
+        }
+
+        /* THEME BUTTON */
+
+        .theme-btn{
+            margin-top:40px;
+            border:none;
+            border-radius:40px;
+            padding:15px;
+            cursor:pointer;
+            color:white;
+            background:linear-gradient(135deg, var(--primary), var(--accent));
+            font-size:15px;
+            font-weight:600;
+            transition:.3s;
+            box-shadow:0 12px 25px rgba(0,0,0,.15);
+        }
+
+        .theme-btn:hover{ transform:translateY(-4px); }
+
+        /* MAIN • HERO • UPLOAD • BUTTONS */
+
+        .main{
+            flex:1;
+            padding:50px 60px;
+            display:flex;
+            flex-direction:column;
+        }
+
+        .hero{ margin-bottom:40px; }
+
+        .badge{
+            display:inline-block;
+            padding:8px 16px;
+            border-radius:999px;
+            background:rgba(155,135,245,.12);
+            color:var(--primary);
+            font-size:13px;
+            font-weight:600;
+            margin-bottom:20px;
+        }
+
+        .hero h1{
+            font-size:52px;
+            font-weight:700;
+            line-height:1.1;
+            margin-bottom:18px;
+        }
+
+        .hero p{
+            max-width:620px;
+            line-height:1.8;
+            color:#666;
+            font-size:16px;
+        }
+
+        body.dark .hero p{ color:#cfcfcf; }
+
+        form{
+            display:flex;
+            flex-direction:column;
+        }
+
+        /* UPLOAD ZONE */
+
+        .upload-zone{
+            position:relative;
+            border:3px dashed var(--primary);
+            border-radius:32px;
+            background:var(--card);
+            backdrop-filter:blur(20px);
+            padding:70px 40px;
+            text-align:center;
+            cursor:pointer;
+            transition:.35s;
+            overflow:hidden;
+            box-shadow:var(--shadow);
+        }
+
+        .upload-zone:hover{
+            transform:translateY(-6px);
+            border-color:var(--accent);
+        }
+
+        .upload-zone::after{
+            content:"";
+            position:absolute;
+            width:260px;
+            height:260px;
+            border-radius:50%;
+            background:rgba(255,255,255,.18);
+            top:-120px;
+            right:-80px;
+            filter:blur(20px);
+        }
+
+        .upload-icon{ font-size:70px; color:var(--primary); margin-bottom:22px; }
+        .upload-zone h2{ font-size:32px; margin-bottom:10px; }
+        .upload-zone p{ color:#666; font-size:15px; margin-bottom:18px; }
+        body.dark .upload-zone p{ color:#cccccc; }
+
+        .supported{
+            display:inline-block;
+            margin-top:10px;
+            padding:8px 18px;
+            border-radius:30px;
+            background:rgba(255,255,255,.35);
+            border:1px solid var(--border);
+            font-size:13px;
+        }
+
+        .image-info{ margin:22px 0; display:flex }
+
+        /* PREVIEW • LOADER • RESPONSIVE */
+
+        .preview{
+            margin-top:30px;
+            display:grid;
+            grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+            gap:20px;
+        }
+
+        .preview-card{
+            position:relative;
+            border-radius:22px;
+            overflow:hidden;
+            background:var(--surface);
+            border:1px solid var(--border);
+            box-shadow:var(--shadow);
+            transition:.35s;
+        }
+
+        .preview-card:hover{ transform:translateY(-6px); }
+
+        .preview-card img{
+            width:100%;
+            height:150px;
+            object-fit:cover;
+            display:block;
+        }
+
+        .remove-btn{
+            position:absolute;
+            top:10px;
+            right:10px;
+            width:34px;
+            height:34px;
+            border:none;
+            border-radius:50%;
+            cursor:pointer;
+            color:white;
+            font-size:15px;
+            background:rgba(255,255,255,.20);
+            backdrop-filter:blur(15px);
+            transition:.3s;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+
+        .remove-btn:hover{
+            background:#dc2626;
+            transform:rotate(90deg) scale(1.08);
+        }
+
+        /* GENERATE BUTTON — no rule existed for this in the original CSS */
+        .primary-btn{
+            margin-top:26px;
+            align-self:flex-start;
+            display:inline-flex;
+            align-items:center;
+            gap:10px;
+            border:none;
+            border-radius:40px;
+            padding:16px 32px;
+            cursor:pointer;
+            color:white;
+            background:linear-gradient(135deg, var(--primary), var(--accent));
+            font-size:16px;
+            font-weight:600;
+            transition:.3s;
+            box-shadow:0 12px 25px rgba(0,0,0,.15);
+        }
+
+        .primary-btn:hover{ transform:translateY(-4px); }
+
+        /* FOOTER NOTE — also had no rule originally */
+        .footer-note{
+            margin-top:24px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            color:#666;
+            font-size:13px;
+        }
+
+        body.dark .footer-note{ color:#cccccc; }
+
+        .loader{
+            position:fixed;
+            inset:0;
+            background:rgba(255,255,255,.55);
+            backdrop-filter:blur(15px);
+            display:none;
+            justify-content:center;
+            align-items:center;
+            flex-direction:column;
+            z-index:999;
+        }
+
+        body.dark .loader{ background:rgba(0,0,0,.55); }
+
+        .spinner{
+            width:70px;
+            height:70px;
+            border-radius:50%;
+            border:6px solid rgba(255,255,255,.25);
+            border-top:6px solid var(--primary);
+            animation:spin 1s linear infinite;
+        }
+
+        .loader p{ margin-top:20px; font-size:16px; font-weight:600; }
+
+        @keyframes spin{ to{ transform:rotate(360deg); } }
+
+        ::-webkit-scrollbar{ width:10px; }
+        ::-webkit-scrollbar-thumb{ background:var(--primary); border-radius:10px; }
+        ::-webkit-scrollbar-track{ background:transparent; }
+        ::selection{ background:var(--primary); color:white; }
+
+        @media (max-width:1000px){
+            .app{ flex-direction:column; }
+            .sidebar{ width:100%; border-right:none; border-bottom:1px solid var(--border); }
+            .menu{ flex-direction:row; flex-wrap:wrap; }
+        }
+
+        @media (max-width:768px){
+            .main{ padding:25px; }
+            .hero h1{ font-size:36px; }
+            .upload-zone{ padding:45px 20px; }
+            .upload-icon{ font-size:55px; }
+            .preview{ grid-template-columns:repeat(2,1fr); }
+        }
+
+        @media (max-width:480px){
+            .hero h1{ font-size:28px; }
+            .badge{ font-size:11px; }
+            .primary-btn{ font-size:15px; }
+            .preview{ grid-template-columns:1fr; }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <!-- Animated Background -->
+    <div class="background-blur blur-1"></div>
+    <div class="background-blur blur-2"></div>
+
+    <div class="app">
+
+        <!-- ================= SIDEBAR ================= -->
+
+        <aside class="sidebar">
+
+            <div class="logo">
+                <i class="fa-solid fa-layer-group"></i>
+                <h2>LightTable</h2>
+            </div>
+
+            <nav class="menu">
+                <a href="#" class="active">
+                    <i class="fa-solid fa-file-pdf"></i>
+                    Convert
+                </a>
+                <a href="#">
+                    <i class="fa-solid fa-folder-open"></i>
+                    Workspace
+                </a>
+                <a href="#">
+                    <i class="fa-solid fa-gear"></i>
+                    Settings
+                </a>
+            </nav>
+
+            <button id="themeToggle" type="button" class="theme-btn">
+                <i class="fa-solid fa-moon"></i>
+                Toggle Theme
+            </button>
+
+        </aside>
+
+        <!-- ================= MAIN ================= -->
+
+        <main class="main">
+
+            <section class="hero">
+                <span class="badge">✨ AI Inspired Workspace</span>
+                <h1>Image → PDF Converter</h1>
+                <p>
+                    Drag your images into the workspace, arrange them,
+                    and export a professional PDF in just one click.
+                </p>
+            </section>
+
+            <!-- ================= FORM ================= -->
+
+            <form id="uploadForm" action="/convert" method="POST" enctype="multipart/form-data">
+
+                <div class="upload-zone" id="dropZone">
+                    <input type="file" id="fileInput" name="images" multiple accept="image/*" hidden>
+                    <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                    <h2>Drop Images Here</h2>
+                    <p>Drag &amp; Drop images or click to browse</p>
+                    <span class="supported">JPG • PNG • WEBP • GIF • TIFF</span>
+                </div>
+
+                <div class="image-info">
+                    <span id="imageCount">No images selected</span>
+                </div>
+
+                <div id="preview" class="preview"></div>
+
+                <button class="primary-btn" type="submit">
+                    <i class="fa-solid fa-file-export"></i>
+                    Generate PDF
+                </button>
+
+            </form>
+
+            <footer class="footer-note">
+                <i class="fa-solid fa-circle-info"></i>
+                Pages will be exported in the same order shown above.
+            </footer>
+
+        </main>
+
+    </div>
+
+    <!-- Loading Screen -->
+
+    <div id="loader" class="loader">
+        <div class="spinner"></div>
+        <p>Generating PDF...</p>
+    </div>
+
+    <script>
+        // ==========================
+        // ELEMENTS
+        // ==========================
+        const body = document.body;
+        const themeButton = document.getElementById("themeToggle");
+        const fileInput = document.getElementById("fileInput");
+        const dropZone = document.getElementById("dropZone");
+        const preview = document.getElementById("preview");
+        const imageCount = document.getElementById("imageCount");
+
+        // filesArray is the single source of truth for "what the user has
+        // selected so far", built up from both the file picker and drag/drop.
+        // syncFileInput() below copies it back onto the real <input> before
+        // each submit, since the browser only ever uploads fileInput.files.
+        let filesArray = [];
+
+        // ==========================
+        // LOAD SAVED THEME
+        // ==========================
+        if (localStorage.getItem("theme") === "dark") {
+            body.classList.add("dark");
+        }
+
+        // ==========================
+        // THEME TOGGLE
+        // ==========================
+        themeButton.addEventListener("click", function () {
+            body.classList.toggle("dark");
+            if (body.classList.contains("dark")) {
+                localStorage.setItem("theme", "dark");
+            } else {
+                localStorage.setItem("theme", "light");
+            }
+        });
+
+        // ==========================
+        // CLICK TO OPEN FILE PICKER
+        // ==========================
+        dropZone.addEventListener("click", function () {
+            fileInput.click();
+        });
+
+        // ==========================
+        // FILE PICKER
+        // ==========================
+        fileInput.addEventListener("change", function () {
+            filesArray = [...fileInput.files];
+            displayImages();
+        });
+
+        // ==========================
+        // DRAG OVER / LEAVE / DROP
+        // ==========================
+        dropZone.addEventListener("dragover", function (e) {
+            e.preventDefault();
+            dropZone.style.borderColor = "var(--accent)";
+            dropZone.style.transform = "scale(1.02)";
+        });
+
+        dropZone.addEventListener("dragleave", function () {
+            dropZone.style.borderColor = "";
+            dropZone.style.transform = "";
+        });
+
+        dropZone.addEventListener("drop", function (e) {
+            e.preventDefault();
+            dropZone.style.borderColor = "";
+            dropZone.style.transform = "";
+
+            const droppedFiles = [...e.dataTransfer.files];
+            droppedFiles.forEach(function (file) {
+                if (file.type.startsWith("image/")) {
+                    filesArray.push(file);
+                }
+            });
+            displayImages();
+        });
+
+        // ==========================
+        // REMOVE IMAGE
+        // ==========================
+        preview.addEventListener("click", function (e) {
+            // .closest() catches a click on the "x" icon *inside* the button
+            // as well as the button itself, so the icon is clickable too.
+            const removeButton = e.target.closest(".remove-btn");
+            if (removeButton) {
+                const index = parseInt(removeButton.dataset.index, 10);
+                filesArray.splice(index, 1);
+                displayImages();
+            }
+        });
+
+        /**
+         * Rebuild the real <input type="file"> from filesArray.
+         *
+         * A native file input's FileList can't be edited directly - you
+         * can't push into it or delete from it. filesArray is where
+         * drag/drop and picker files are actually tracked, so before the
+         * form can submit anything, fileInput.files has to be rebuilt from
+         * it via a DataTransfer object. Without this step, images dragged
+         * into the drop zone show up in the preview but never actually get
+         * uploaded.
+         */
+        function syncFileInput() {
+            const dataTransfer = new DataTransfer();
+            filesArray.forEach(function (file) {
+                dataTransfer.items.add(file);
+            });
+            fileInput.files = dataTransfer.files;
+        }
+
+        /**
+         * Update the "N images selected" text below the drop zone.
+         */
+        function updateCounter() {
+            if (filesArray.length === 0) {
+                imageCount.textContent = "No images selected";
+            } else if (filesArray.length === 1) {
+                imageCount.textContent = "1 image selected";
+            } else {
+                imageCount.textContent = filesArray.length + " images selected";
+            }
+        }
+
+        // ==========================
+        // LOADING SCREEN / SUBMIT
+        // ==========================
+        const form = document.getElementById("uploadForm");
+        const loader = document.getElementById("loader");
+
+        form.addEventListener("submit", function (e) {
+            if (filesArray.length === 0) {
+                e.preventDefault();
+                alert("Please select at least one image.");
+                return;
+            }
+            // Make sure the real file input carries every image the user
+            // sees in the preview grid before the browser submits the form.
+            syncFileInput();
+            loader.style.display = "flex";
+        });
+
+        /**
+         * Re-render the thumbnail preview grid from filesArray, and keep
+         * the real file input in sync with it.
+         *
+         * Each file is read with FileReader so it can be shown as a data
+         * URL thumbnail without needing a round trip to the server.
+         */
+        function displayImages() {
+            preview.innerHTML = "";
+            updateCounter();
+            syncFileInput();
+
+            filesArray.forEach(function (file, index) {
+                if (!file.type.startsWith("image/")) return;
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const card = document.createElement("div");
+                    card.className = "preview-card";
+                    card.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                        <button type="button" class="remove-btn" data-index="${index}">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    `;
+                    preview.appendChild(card);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ==========================
+        // KEYBOARD SHORTCUT
+        // Ctrl + D = Toggle Theme
+        // ==========================
+        document.addEventListener("keydown", function (e) {
+            if (e.ctrlKey && e.key.toLowerCase() === "d") {
+                e.preventDefault();
+                themeButton.click();
+            }
+        });
+
+        // ==========================
+        // DRAG EFFECT
+        // ==========================
+        ["dragenter", "dragover"].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => {
+                dropZone.style.boxShadow = "0 0 30px rgba(139,92,246,.35)";
+            });
+        });
+
+        ["dragleave", "drop"].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => {
+                dropZone.style.boxShadow = "";
+            });
+        });
+
+        // ==========================
+        // INITIAL STATE
+        // ==========================
+        updateCounter();
+    </script>
+
+</body>
+
+</html>
